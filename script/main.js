@@ -57,15 +57,13 @@ if (!userName) {
   if (localStorage.getItem(userName)) {
     const data = JSON.parse(localStorage.getItem(userName));
     tasks = data.tasks;
-    loadFromLocalStorage(data.showCompleted);
+    loadFromLocalStorage(data);
   }
 
-  // Обработчик события submit формы
   form.addEventListener('submit', addTask);
 
-  // Удаление и завершение задачи, через клик по кнопке
   container.addEventListener('click', controlTaskActions);
-  // Обработчик событий для поля input (активация кнопок)
+
   inputFormElement.addEventListener('input', function() {
     const taskText = inputFormElement.value.trim();
 
@@ -77,7 +75,6 @@ if (!userName) {
     }
   });
 
-  // Обработчик события reset для сброса формы и деактивации кнопок
   form.addEventListener('reset', function() {
     submitButtonFormElement.disabled = true;
     resetButtonFormElement.disabled = true;
@@ -86,67 +83,21 @@ if (!userName) {
   // Функция добавления задачи и отрисовки таблицы
   function addTask(e) {
     e.preventDefault();
-
+  
     const taskText = taskInput.value.trim();
     if (!taskText) return; // Пропускаем пустые задачи
-
-    const tableWrapper = container.querySelector('.table-wrapper');
-    const tbody = tableWrapper ? tableWrapper.querySelector('tbody') : null;
-
-    const newTask = { //Записываем задачу в виде объекта
+  
+    const newTask = {
       id: generateId(),
       text: taskText,
       done: false,
     };
-
-    // Добавляем задачу в массив
+  
     tasks.push(newTask);
-
-    // Сохраняем массив задач в localStorage
-    saveToLocalStorage(true);
-
-    // Формируем CSS класс
-    const cssClass = getTaskClass(newTask.done);
-
-    const newRow = `
-      <tr class="${cssClass}" id=${newTask.id}>
-        <td>${tbody ? tbody.children.length + 1 : 1}</td>
-        <td class="task">
-          ${newTask.text}
-        </td>
-        <td>В процессе</td>
-        <td>
-          <button class="btn btn-danger" type="button" data-action="delete">
-            Удалить
-          </button>
-          <button class="btn btn-success" type="button" data-action="done">
-            Завершить
-          </button>
-        </td>
-      </tr>`;
-
-    if (tableWrapper) {
-      tbody.insertAdjacentHTML('beforeend', newRow);
-    } else {
-      const tableHTML = `
-        <div class="table-wrapper">
-          <table class="table table-hover table-bordered">
-            <thead>
-              <tr>
-                <th>№</th>
-                <th>Задача</th>
-                <th>Статус</th>
-                <th>Действия</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${newRow}
-            </tbody>
-          </table>
-        </div>`;
-
-      container.insertAdjacentHTML('beforeend', tableHTML);
-    }
+  
+    saveToLocalStorage();
+  
+    renderTable(tasks);
 
     taskInput.value = '';
     taskInput.focus();
@@ -205,63 +156,72 @@ if (!userName) {
   }
 
   // Функция сохранения задач в localStorage
-  function saveToLocalStorage(showCompleted = false) {
+  function saveToLocalStorage() {
     const data = {
       tasks,
-      showCompleted
     };
     localStorage.setItem(userName, JSON.stringify(data));
   }
 
   // Функция загрузки задач из localStorage
-  function loadFromLocalStorage(showCompleted = false) {
-    tasks.forEach((task) => {
-      if (!showCompleted && task.done) return; // Пропускаем завершенные задачи, если showCompleted = false
+  function loadFromLocalStorage() {
+    renderTable(tasks);
+  }
 
-      const tableWrapper = container.querySelector('.table-wrapper');
-      const tbody = tableWrapper ? tableWrapper.querySelector('tbody') : null;
+  // Функция рендера строки с задачей
+  function renderTask(task) {
+    const cssClass = getTaskClass(task.done);
+  
+    return `
+      <tr class="${cssClass}" id="${task.id}">
+        <td>${task.index}</td>
+        <td class="task ${task.done ? 'text-decoration-line-through' : ''}">
+          ${task.text}
+        </td>
+        <td>${task.done ? 'Выполнена' : 'В процессе'}</td>
+        <td>
+          <button class="btn btn-danger" type="button" data-action="delete">
+            Удалить
+          </button>
+          <button class="btn btn-success" type="button" data-action="done" ${task.done ? 'disabled' : ''}>
+            Завершить
+          </button>
+        </td>
+      </tr>`;
+  }
 
-      const cssClass = getTaskClass(task.done);
-
-      const newRow = `
-        <tr class="${cssClass}" id=${task.id}>
-          <td>${tbody ? tbody.children.length + 1 : 1}</td>
-          <td class="task ${task.done ? 'text-decoration-line-through' : ''}">
-            ${task.text}
-          </td>
-          <td>${task.done ? 'Выполнена' : 'В процессе'}</td>
-          <td>
-            <button class="btn btn-danger" type="button" data-action="delete">
-              Удалить
-            </button>
-            <button class="btn btn-success" type="button" data-action="done" ${task.done ? 'disabled' : ''}>
-              Завершить
-            </button>
-          </td>
-        </tr>`;
-
-      if (tableWrapper) {
-        tbody.insertAdjacentHTML('beforeend', newRow);
-      } else {
-        const tableHTML = `
-          <div class="table-wrapper">
-            <table class="table table-hover table-bordered">
-              <thead>
-                <tr>
-                  <th>№</th>
-                  <th>Задача</th>
-                  <th>Статус</th>
-                  <th>Действия</th>
-                </tr>
-              </thead>
-              <tbody>
-                ${newRow}
-              </tbody>
-            </table>
-          </div>`;
-
-        container.insertAdjacentHTML('beforeend', tableHTML);
-      }
+  // Функция рендера всей таблицы
+  function renderTable(tasks) {
+    const tableWrapper = container.querySelector('.table-wrapper');
+    let tbodyHTML = '';
+  
+    tasks.forEach((task, index) => {
+  
+      task.index = index + 1;
+      tbodyHTML += renderTask(task);
     });
+  
+    const tableHTML = `
+      <div class="table-wrapper">
+        <table class="table table-hover table-bordered">
+          <thead>
+            <tr>
+              <th>№</th>
+              <th>Задача</th>
+              <th>Статус</th>
+              <th>Действия</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${tbodyHTML}
+          </tbody>
+        </table>
+      </div>`;
+  
+    if (tableWrapper) {
+      tableWrapper.innerHTML = tableHTML;
+    } else {
+      container.insertAdjacentHTML('beforeend', tableHTML);
+    }
   }
 }
