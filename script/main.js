@@ -1,7 +1,7 @@
-import { generateId, renderTable } from './tasks.js';
-import { renderForm } from './form.js';
-import { saveToLocalStorage, loadFromLocalStorage } from './storage.js';
-import { controlEvents } from './events.js';
+import { generateId, renderTable } from './modules/tasks.js';
+import { renderForm } from './modules/form.js';
+import { saveToLocalStorage, loadFromLocalStorage } from './modules/storage.js';
+import { controlEvents } from './modules/events.js';
 
 const userName = prompt("Пожалуйста, введите ваше имя:");
 
