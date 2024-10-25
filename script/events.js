@@ -1,7 +1,7 @@
 import { getTaskClass, renderTable } from './tasks.js';
 import { saveToLocalStorage } from './storage.js';
 
-export function controlEvents(container, tasks, taskInput, form) {
+export function controlEvents(container, tasks, taskInput, form, userName) {
   container.addEventListener('click', (e) => {
     const action = e.target.dataset.action;
 
@@ -15,7 +15,7 @@ export function controlEvents(container, tasks, taskInput, form) {
         if (!confirmDelete) return;
 
         tasks = tasks.filter((task) => task.id!== id);
-        saveToLocalStorage(tasks);
+        saveToLocalStorage(tasks, userName);
 
         parentNode.remove();
         // Если задач больше нет, удаляем всю таблицу
@@ -28,7 +28,7 @@ export function controlEvents(container, tasks, taskInput, form) {
         const task = tasks.find((task) => task.id === id);
         task.done =!task.done;
 
-        saveToLocalStorage(tasks);
+        saveToLocalStorage(tasks, userName);
 
         parentNode.className = getTaskClass(task.done);
         const taskElement = parentNode.querySelector('.task');

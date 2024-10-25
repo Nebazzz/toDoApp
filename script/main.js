@@ -52,5 +52,5 @@ if (!userName) {
     renderTable(tasks, container);
   });
 
-  controlEvents(container, tasks, taskInput, form);
+  controlEvents(container, tasks, taskInput, form, userName);
 }
