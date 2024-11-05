@@ -44,6 +44,8 @@ if (!userName) {
 
     tasks.push(newTask);
 
+    tasks.forEach((task, index) => { task.index = index + 1; });
+
     saveToLocalStorage(tasks, userName);
 
     taskInput.value = '';
@@ -53,4 +55,6 @@ if (!userName) {
   });
 
   controlEvents(container, tasks, taskInput, form, userName);
+
+  renderTable(tasks, container);
 }

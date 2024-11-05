@@ -7,21 +7,28 @@ export function controlEvents(container, tasks, taskInput, form, userName) {
 
     if (action === 'delete' || action === 'done') {
       const parentNode = e.target.closest('tr');
-      const id = parentNode.id; // Переводим строку в число
+      const id = parentNode.id;
 
       if (action === 'delete') {
         // Уточняем у пользователя, хочет ли он удалить задачу
         const confirmDelete = confirm("Вы действительно хотите удалить эту задачу?");
         if (!confirmDelete) return;
-
-        tasks = tasks.filter((task) => task.id!== id);
+    
+        const id = parentNode.id;
+        const index = tasks.findIndex((task) => task.id === id);
+        tasks.splice(index, 1); // Удаляем задачу из массива tasks
+    
         saveToLocalStorage(tasks, userName);
-
+    
         parentNode.remove();
         // Если задач больше нет, удаляем всю таблицу
-        if (parentNode.parentNode.children.length === 0) {
+        if (parentNode.parentNode && parentNode.parentNode.children.length === 0) {
           parentNode.parentNode.parentNode.remove();
         }
+    
+        tasks.forEach((task, index) => { task.index = index + 1; }); // Обновляем индекс задачи
+    
+        renderTable(tasks, container); // Отрисовываем таблицу заново
       }
 
       if (action === 'done') {
